@@ -1,0 +1,1 @@
+{"ip":"192.168.0.107","password":"980322","serverType":"Linux","user":"root"}&{"ip":"192.168.0.102","password":"980322","serverType":"Windows","user":"liyang"}
