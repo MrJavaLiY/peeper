@@ -3,8 +3,7 @@ package com.monitor.peeper.listener;
 import com.alibaba.excel.context.AnalysisContext;
 import com.alibaba.excel.read.listener.ReadListener;
 import com.alibaba.excel.util.ListUtils;
-import com.monitor.peeper.dao.DemoDAO;
-import com.monitor.peeper.entity.ServerMessage;
+import com.monitor.peeper.entity.excel.ServerMessage;
 
 import java.util.List;
 
@@ -21,19 +20,7 @@ public class DataListener implements ReadListener<ServerMessage> {
      * 假设这个是一个DAO，当然有业务逻辑这个也可以是一个service。当然如果不用存储这个对象没用。
      */
 
-//    public DataListener() {
-//        // 这里是demo，所以随便new一个。实际使用如果到了spring,请使用下面的有参构造函数
-//        demoDAO = new DemoDAO();
-//    }
 
-    /**
-     * 如果使用了spring,请使用这个构造方法。每次创建Listener的时候需要把spring管理的类传进来
-     *
-     * @param demoDAO
-     */
-//    public DemoDataListener(DemoDAO demoDAO) {
-//        this.demoDAO = demoDAO;
-//    }
 
     /**
      * 这个每一条数据解析都会来调用
