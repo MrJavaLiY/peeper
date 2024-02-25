@@ -8,8 +8,8 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @SpringBootApplication
 @EnableAsync
 @EnableScheduling
-public class MonitorApplication {
+public class PeeperApplication {
     public static void main(String[] args) {
-        SpringApplication.run(MonitorApplication.class, args);
+        SpringApplication.run(PeeperApplication.class, args);
     }
 }

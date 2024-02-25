@@ -5,7 +5,7 @@ import lombok.Data;
 import java.util.Date;
 
 @Data
-public class NoticeConfig {
+public class NoticeConfig  extends ExcelEntity{
     private String value;
     private Date time;
 }
