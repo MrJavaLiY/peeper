@@ -40,9 +40,9 @@ class MonitorApplicationTests {
         dataValue.setPort("11111");
         dataValue.setStatus(true);
         dataValue11s.add(dataValue);
-        dataExcelDataBase.add(dataValue11s);
+        dataExcelDataBase.delete(dataValue);
         System.out.println(dataExcelDataBase.read().toString());
-        Thread.sleep(60000);
+//        Thread.sleep(60000);
     }
 
     public static void main(String[] args) throws Exception {

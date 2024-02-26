@@ -5,6 +5,7 @@ import com.alibaba.excel.context.AnalysisContext;
 import com.alibaba.excel.read.listener.ReadListener;
 import com.alibaba.excel.util.ListUtils;
 import com.monitor.peeper.entity.excel.*;
+import com.xiaoleilu.hutool.date.DateUtil;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 
@@ -16,23 +17,43 @@ import java.util.concurrent.ThreadFactory;
 @Data
 @Slf4j
 public abstract class ExcelDataBase<T> implements ReadListener<T> {
+    /**
+     * 基础数据存储位置
+     */
     private static final String FOLDER = "data/";
-
+    /**
+     * 服务器信息存储位置
+     */
     protected static final String SERVER_PATH = FOLDER + "server_message.xlsx";
     protected static final String SERVER_SHEET_NAME = "server";
-
+    /**
+     * 数据存储位置
+     */
     protected static final String DATA_PATH = FOLDER + "data_value.xlsx";
     protected static final String DATA_SHEET_NAME = "data";
-
+    /**
+     * 任务调度存储位置
+     */
     protected static final String SCHEDULER_PATH = FOLDER + "scheduler_log.xlsx";
     protected static final String SCHEDULER_SHEET_NAME = "log";
-
+    /**
+     * 外部消息通知存储位置
+     */
     protected static final String NOTICE_PATH = FOLDER + "notice_config.xlsx";
     protected static final String NOTICE_SHEET_NAME = "message";
-
+    /**
+     * EasyExcel使用参数
+     */
     protected String path = "";
     protected String sheetName = "";
     protected Class<T> clazz;
+
+    /**
+     * 数据缓存池
+     */
+    protected Set<T> cache = new CopyOnWriteArraySet<>();
+    protected Map<String, T> cacheMap = null;
+
 
     public ExcelDataBase() {
         guard();
@@ -46,11 +67,6 @@ public abstract class ExcelDataBase<T> implements ReadListener<T> {
         initMap();
     }
 
-    /**
-     * 缓存的数据
-     */
-    protected Set<T> cache = new CopyOnWriteArraySet<>();
-    protected Map<String, T> cacheMap = null;
 
     /**
      * 需要实现，封装index
@@ -60,6 +76,9 @@ public abstract class ExcelDataBase<T> implements ReadListener<T> {
      */
     abstract String getIndex(T t);
 
+    /**
+     * 将set转换成map，好检索
+     */
     protected void transMap() {
         initMap();
         cache.forEach(c -> {
@@ -67,6 +86,9 @@ public abstract class ExcelDataBase<T> implements ReadListener<T> {
         });
     }
 
+    /**
+     * 初始化缓存map
+     */
     protected void initMap() {
         if (cacheMap != null) {
             cacheMap.clear();
@@ -75,6 +97,12 @@ public abstract class ExcelDataBase<T> implements ReadListener<T> {
         }
     }
 
+    /**
+     * 传入list转为map
+     *
+     * @param newData 存数据的list
+     * @return
+     */
     protected Map<String, T> newDataToMap(List<T> newData) {
         Map<String, T> newDataMap = new HashMap<>(newData.size());
         newData.forEach(c -> {
@@ -83,16 +111,42 @@ public abstract class ExcelDataBase<T> implements ReadListener<T> {
         return newDataMap;
     }
 
+    /**
+     * 单条数据转map
+     *
+     * @param datum 单条业务数据
+     * @return
+     */
+    private Map<String, T> newDatumMap(T datum) {
+        Map<String, T> newDataMap = new HashMap<>(1);
+        newDataMap.put(getIndex(datum), datum);
+        return newDataMap;
+    }
+
+    /**
+     * 添加缓存
+     *
+     * @param data
+     */
     public void addCache(T data) {
         cache.add(data);
         transMap();
     }
 
+    /**
+     * 获取所有缓存
+     *
+     * @return
+     */
     public Set<T> getAll() {
         return cache;
     }
 
-    //    abstract List<T> read();
+    /**
+     * 读取数据
+     *
+     * @return
+     */
     public Set<T> read() {
         EasyExcel.read(path, clazz, this).sheet().doRead();
         return getAll();
@@ -129,32 +183,70 @@ public abstract class ExcelDataBase<T> implements ReadListener<T> {
         cover(dataAll);
     }
 
+    /**
+     * 删除数据并刷新缓存
+     *
+     * @param datum
+     */
+    public void delete(T datum) {
+        if (cacheMap.containsKey(getIndex(datum))) {
+            cache.remove(cacheMap.get(getIndex(datum)));
+            List<T> dataAll = new ArrayList<>(cache);
+            cover(dataAll);
+            initCache();
+        }
+    }
 
+    /**
+     * 读取文件
+     *
+     * @param data    one row value. It is same as {@link AnalysisContext#readRowHolder()}
+     * @param context analysis context
+     */
     @Override
     public void invoke(T data, AnalysisContext context) {
         addCache(data);
     }
 
+    /**
+     * 读取文件完成后最后执行的
+     *
+     * @param context
+     */
     @Override
     public void doAfterAllAnalysed(AnalysisContext context) {
         log.info("文件读取完成！");
     }
 
+    /**
+     * 启动守护线程
+     */
     private void guard() {
         Guard guard = new Guard();
         guard.start();
+        log.info("======文件读取守护线程启动======");
     }
 
+    /**
+     * 缓存更新
+     */
+    private void initCache() {
+        cache.clear();
+        initMap();
+        read();
+        log.debug("======缓存已更新 时间{}======", DateUtil.date());
+    }
+
+    /**
+     * 守护线程
+     */
     class Guard extends Thread {
         @Override
         public void run() {
             while (true) {
                 try {
                     Thread.sleep(30000);
-                    cache.clear();
-                    initMap();
-                    read();
-                    log.info("缓存已更新=================");
+                    initCache();
                     log.debug(cache.toString());
                     log.debug(cacheMap.toString());
                 } catch (Exception e) {

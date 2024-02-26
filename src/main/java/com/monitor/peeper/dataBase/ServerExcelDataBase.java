@@ -24,7 +24,7 @@ public class ServerExcelDataBase extends ExcelDataBase<ServerMessage> {
 
     @Override
     String getIndex(ServerMessage serverMessage) {
-        return null;
+        return serverMessage.getIp() + ":" + serverMessage.getUser();
     }
 }
 

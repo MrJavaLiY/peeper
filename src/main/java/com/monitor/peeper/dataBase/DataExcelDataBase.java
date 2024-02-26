@@ -16,7 +16,7 @@ import java.util.Map;
 public class DataExcelDataBase extends ExcelDataBase<DataValue> {
 
     public DataExcelDataBase() {
-        super(DATA_PATH,DATA_SHEET_NAME,DataValue.class);
+        super(DATA_PATH, DATA_SHEET_NAME, DataValue.class);
     }
 
 
