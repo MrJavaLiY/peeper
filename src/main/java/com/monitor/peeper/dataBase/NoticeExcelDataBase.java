@@ -1,8 +1,13 @@
 package com.monitor.peeper.dataBase;
 
+import com.alibaba.excel.read.listener.ReadListener;
+import com.monitor.peeper.entity.excel.DataValue;
 import com.monitor.peeper.entity.excel.NoticeConfig;
 
-public class NoticeExcelDataBase extends ExcelDataBase {
+import java.util.List;
+import java.util.Map;
+
+public class NoticeExcelDataBase extends ExcelDataBase<NoticeConfig>  {
 
     public NoticeExcelDataBase() {
         super();
@@ -11,5 +16,10 @@ public class NoticeExcelDataBase extends ExcelDataBase {
         sheetName=NOTICE_SHEET_NAME;
     }
 
+
+    @Override
+    String getIndex(NoticeConfig noticeConfig) {
+        return null;
+    }
 }
 

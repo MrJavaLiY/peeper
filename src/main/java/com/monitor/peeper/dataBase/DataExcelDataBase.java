@@ -1,34 +1,28 @@
 package com.monitor.peeper.dataBase;
 
 import com.alibaba.excel.EasyExcel;
+import com.alibaba.excel.context.AnalysisContext;
+import com.alibaba.excel.read.listener.ReadListener;
 import com.monitor.peeper.entity.excel.DataValue;
-import com.monitor.peeper.entity.excel.ExcelEntity;
-import com.monitor.peeper.listener.CachePool;
-import com.monitor.peeper.listener.DataListener;
-import com.monitor.peeper.listener.DataValueDataListener;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.Resource;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Component
+@Slf4j
 public class DataExcelDataBase extends ExcelDataBase<DataValue> {
-    @Resource
-    DataValueDataListener dataValueDataListener;
-    @Resource
-    CachePool cachePool;
 
     public DataExcelDataBase() {
-        super();
-        clazz = DataValue.class;
-        path = DATA_PATH;
-        sheetName = DATA_SHEET_NAME;
+        super(DATA_PATH,DATA_SHEET_NAME,DataValue.class);
     }
 
+
     @Override
-    List<DataValue> read() {
-        EasyExcel.read(path, clazz, dataValueDataListener).sheet().doRead();
-        return (List<DataValue>) cachePool.getAll(clazz);
+    String getIndex(DataValue dataValue) {
+        return dataValue.getIp() + ":" + dataValue.getPort();
     }
 }
 
