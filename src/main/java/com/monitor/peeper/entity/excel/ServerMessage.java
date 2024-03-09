@@ -9,4 +9,5 @@ public class ServerMessage  extends ExcelEntity{
     private String password;
     private String type;
 
+
 }

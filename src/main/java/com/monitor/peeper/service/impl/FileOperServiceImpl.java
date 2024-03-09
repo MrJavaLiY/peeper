@@ -1,114 +1,63 @@
 package com.monitor.peeper.service.impl;
 
-import com.alibaba.fastjson.JSONObject;
 import com.monitor.peeper.condition.RequestCondition;
+import com.monitor.peeper.dataBase.ServerExcelDataBase;
+import com.monitor.peeper.entity.excel.ServerMessage;
+import com.monitor.peeper.exception.NotSM2UpdateException;
 import com.monitor.peeper.service.FileOperService;
+import com.monitor.peeper.utils.ResponseEntity;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import utils.ResponseEntity;
+import org.springframework.util.StringUtils;
 
-import java.io.*;
-import java.net.URLDecoder;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 @Service
 @Slf4j
-public class FileOperServiceImpl implements FileOperService {
-    String path = "data/config.txt";
-    String splitType = "&";
-
+public class FileOperServiceImpl extends ServerExcelDataBase implements FileOperService {
     @Override
-    public void in(RequestCondition condition) throws IOException {
-        boolean b = false;
-        List<RequestCondition> outCon = outEntity();
-        StringBuilder sb = new StringBuilder();
-        for (RequestCondition requestCondition : outCon) {
-            b = requestCondition.getIp().equals(condition.getIp());
-            if (b) {
-                outCon.remove(requestCondition);
-                break;
-            }
-        }
-        if (b){
-          outCon.add(condition);
-        }
-        if (outCon.size() == 0 || !b) {
-            outCon.add(condition);
-        }
-        for (RequestCondition requestCondition : outCon) {
-            sb.append(JSONObject.toJSONString(requestCondition)).append(splitType);
-        }
-        this.in(sb.substring(0, sb.length() - 1), b);
+    public ResponseEntity<String> addData2File(RequestCondition condition) {
+        ServerMessage serverMessage = condition.getSm();
+        serverMessage.setIndex(getIndex(serverMessage));
+        super.add(serverMessage);
+        return new ResponseEntity<String>().success("", "成功");
     }
 
     @Override
-    public void in(String value, boolean b) throws IOException {
-        FileOutputStream fileWriter = new FileOutputStream(path, false);
-        fileWriter.write(value.getBytes(StandardCharsets.UTF_8));
+    public ResponseEntity<List<ServerMessage>> getData2View() {
+        return new ResponseEntity<List<ServerMessage>>().success(new ArrayList<>(super.getAll()), "成功");
     }
 
     @Override
-    public String out() throws IOException {
-        FileInputStream in = new FileInputStream(path);
-        InputStreamReader reader = new InputStreamReader(in);
-        BufferedReader br = new BufferedReader(reader);
-        StringBuilder sb = new StringBuilder();
-        String sr = "";
-        while ((sr = br.readLine()) != null) {
-            sb.append(sr);
+    public ResponseEntity<?> deleteData2File(RequestCondition condition) {
+        ServerMessage serverMessage = new ServerMessage();
+        serverMessage.setIp(condition.getIp());
+        serverMessage.setUser(condition.getUser());
+
+        ServerMessage cacheDatum = super.getCacheOne(super.getIndex(serverMessage));
+        super.delete(cacheDatum);
+        return getData2View();
+    }
+
+    @Override
+    public ResponseEntity<ServerMessage> updateData2File(RequestCondition condition) {
+        ServerMessage serverMessage = condition.getSm();
+        ServerMessage cacheDatum = super.getCacheOne(super.getIndex(serverMessage));
+        if (cacheDatum == null) {
+            throw new NotSM2UpdateException("这次传入的ip和账号没有发现可修改的服务器，如果需要修改请先删除后新增");
         }
-        return sb.toString();
-    }
-
-    @Override
-    public List<RequestCondition> outEntity() throws IOException {
-        String outValue = this.out();
-        List<RequestCondition> conditions = new ArrayList<>();
-        if (outValue.contains(splitType)) {
-            String[] outValues = outValue.split(splitType);
-            System.out.println(Arrays.toString(outValues));
-            for (String value : outValues) {
-                conditions.add(JSONObject.parseObject(value, RequestCondition.class));
-            }
-        } else {
-            RequestCondition condition = JSONObject.parseObject(outValue, RequestCondition.class);
-            if (condition != null) {
-                conditions.add(condition);
-            }
+        if (StringUtils.hasText(condition.getSm().getEnable())) {
+            cacheDatum.setEnable(condition.getSm().getEnable());
         }
-        return conditions;
-    }
-
-    @Override
-    public ResponseEntity<?> deleteById(String id) throws IOException {
-        List<RequestCondition> outValue = outEntity();
-        for (int i = 0; i < outValue.size(); i++) {
-            if (outValue.get(i).getIp().equals(id)) {
-                outValue.remove(i);
-                break;
-            }
+        if (StringUtils.hasText(condition.getSm().getPassword())) {
+            cacheDatum.setPassword(condition.getSm().getPassword());
         }
-        StringBuilder sb = new StringBuilder();
-        for (RequestCondition requestCondition : outValue) {
-            sb.append(JSONObject.toJSONString(requestCondition)).append(splitType);
+        if (StringUtils.hasText(condition.getSm().getType())) {
+            cacheDatum.setType(condition.getSm().getType());
         }
-        this.in(sb.substring(0, sb.length() - 1), false);
-        return new ResponseEntity<>().success("","成功");
-    }
-    final String enc = "UTF-8";
-
-    @Override
-    public String encoder(String source) throws UnsupportedEncodingException {
-        return URLEncoder.encode(source, enc);
-    }
-
-    @Override
-    public String decoder(String source) throws UnsupportedEncodingException {
-        return URLDecoder.decode(source, enc);
+        super.update(cacheDatum);
+        return new ResponseEntity<ServerMessage>().success(getCacheOne(getIndex(serverMessage)), "成功");
     }
 
 }

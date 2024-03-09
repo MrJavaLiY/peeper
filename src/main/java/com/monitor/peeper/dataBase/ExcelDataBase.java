@@ -3,8 +3,6 @@ package com.monitor.peeper.dataBase;
 import com.alibaba.excel.EasyExcel;
 import com.alibaba.excel.context.AnalysisContext;
 import com.alibaba.excel.read.listener.ReadListener;
-import com.alibaba.excel.util.ListUtils;
-import com.monitor.peeper.entity.excel.*;
 import com.xiaoleilu.hutool.date.DateUtil;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -12,7 +10,6 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArraySet;
-import java.util.concurrent.ThreadFactory;
 
 @Data
 @Slf4j
@@ -58,6 +55,7 @@ public abstract class ExcelDataBase<T> implements ReadListener<T> {
     public ExcelDataBase() {
         guard();
         initMap();
+
     }
 
     public ExcelDataBase(String path, String sheetName, Class<T> clazz) {
@@ -79,7 +77,7 @@ public abstract class ExcelDataBase<T> implements ReadListener<T> {
     /**
      * 将set转换成map，好检索
      */
-    protected void transMap() {
+    protected  void transMap() {
         initMap();
         cache.forEach(c -> {
             cacheMap.put(getIndex(c), c);
@@ -89,7 +87,7 @@ public abstract class ExcelDataBase<T> implements ReadListener<T> {
     /**
      * 初始化缓存map
      */
-    protected void initMap() {
+    protected synchronized void initMap() {
         if (cacheMap != null) {
             cacheMap.clear();
         } else {
@@ -133,6 +131,17 @@ public abstract class ExcelDataBase<T> implements ReadListener<T> {
         transMap();
     }
 
+    public T getCacheOne(String index) {
+        if (!cacheMap.containsKey(index)) {
+            synchronized (this) {
+                if (!cacheMap.containsKey(index)) {
+                    read();
+                }
+            }
+        }
+        return cacheMap.getOrDefault(index, null);
+    }
+
     /**
      * 获取所有缓存
      *
@@ -149,6 +158,7 @@ public abstract class ExcelDataBase<T> implements ReadListener<T> {
      */
     public Set<T> read() {
         EasyExcel.read(path, clazz, this).sheet().doRead();
+        transMap();
         return getAll();
     }
 
@@ -167,16 +177,34 @@ public abstract class ExcelDataBase<T> implements ReadListener<T> {
      *
      * @param newData
      */
-    public void add(List<T> newData) {
+    public void addAll(List<T> newData) {
         Map<String, T> newDataMap = newDataToMap(newData);
-        List<T> dataAll = new ArrayList<>(cache);
+        List<T> dataAll;
         if (cacheMap == null || cacheMap.isEmpty()) {
             dataAll = newData;
         } else {
-            List<T> finalDataAll = dataAll;
+            dataAll = new ArrayList<>(cache);
             newDataMap.forEach((k, v) -> {
                 if (!cacheMap.containsKey(k)) {
-                    finalDataAll.add(v);
+                    dataAll.add(v);
+                }
+            });
+        }
+        cover(dataAll);
+    }
+
+    public void add(T data) {
+        Map<String, T> newDataMap = new HashMap<>();
+        newDataMap.put(getIndex(data), data);
+        List<T> dataAll;
+        if (cacheMap == null || cacheMap.isEmpty()) {
+            dataAll = new ArrayList<>();
+            dataAll.add(data);
+        } else {
+            dataAll = new ArrayList<>(cache);
+            newDataMap.forEach((k, v) -> {
+                if (!cacheMap.containsKey(k)) {
+                    dataAll.add(v);
                 }
             });
         }
@@ -191,6 +219,16 @@ public abstract class ExcelDataBase<T> implements ReadListener<T> {
     public void delete(T datum) {
         if (cacheMap.containsKey(getIndex(datum))) {
             cache.remove(cacheMap.get(getIndex(datum)));
+            List<T> dataAll = new ArrayList<>(cache);
+            cover(dataAll);
+            initCache();
+        }
+    }
+
+    public void update(T datum) {
+        if (cacheMap.containsKey(getIndex(datum))) {
+            cache.remove(cacheMap.get(getIndex(datum)));
+            cache.add(datum);
             List<T> dataAll = new ArrayList<>(cache);
             cover(dataAll);
             initCache();
@@ -230,7 +268,7 @@ public abstract class ExcelDataBase<T> implements ReadListener<T> {
     /**
      * 缓存更新
      */
-    private void initCache() {
+    protected void initCache() {
         cache.clear();
         initMap();
         read();

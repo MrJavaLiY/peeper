@@ -1,15 +1,15 @@
 package com.monitor.peeper.job;
 
-import com.monitor.peeper.condition.RequestCondition;
 import com.monitor.peeper.entity.WinCmdEntity;
+import com.monitor.peeper.entity.excel.ServerMessage;
 import com.monitor.peeper.mode.StrategyOperate;
 import com.monitor.peeper.pool.DataPool;
 import com.monitor.peeper.service.FileOperService;
+import com.monitor.peeper.utils.ResponseEntity;
 import com.xiaoleilu.hutool.date.DateUnit;
 import com.xiaoleilu.hutool.date.DateUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import utils.ResponseEntity;
 
 import javax.annotation.Resource;
 import java.util.Date;
@@ -31,18 +31,18 @@ public class MyJobImpl implements MyJob {
     public void job1() {
         Date now = DateUtil.date();
         try {
-            List<RequestCondition> conditionList = fileOperService.outEntity();
-            for (RequestCondition condition : conditionList) {
-                String ip = condition.getIp();
+            List<ServerMessage> conditionList = fileOperService.getData2View().getData();
+            for (ServerMessage serverMessage : conditionList) {
+                String ip = serverMessage.getIp();
                 Object o = strategyOperate.
-                        executeMethodSpring(condition.getServerType(), condition);
+                        executeMethodSpring(serverMessage.getType(), serverMessage);
                 ResponseEntity<List<WinCmdEntity>> responseEntity = (ResponseEntity<List<WinCmdEntity>>) o;
                 List<WinCmdEntity> data = responseEntity.getData();
                 for (WinCmdEntity datum : data) {
                     Map<Integer, WinCmdEntity> serverData = dataPool.serverRealPool.get(ip);
                     int key = datum.getPort();
                     datum.setLastTime(now);
-                    datum.setIp(condition.getIp());
+                    datum.setIp(serverMessage.getIp());
                     if (serverData == null) {
                         dataPool.serverRealPool.put(ip, new ConcurrentHashMap<>());
                         serverData = dataPool.serverRealPool.get(ip);

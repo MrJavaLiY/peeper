@@ -3,9 +3,9 @@ package com.monitor.peeper.service;
 
 import com.monitor.peeper.annotation.Strategy;
 import com.monitor.peeper.annotation.StrategyPoint;
-import com.monitor.peeper.condition.RequestCondition;
 import com.monitor.peeper.entity.WinCmdEntity;
-import utils.ResponseEntity;
+import com.monitor.peeper.entity.excel.ServerMessage;
+import com.monitor.peeper.utils.ResponseEntity;
 
 import java.util.List;
 
@@ -15,5 +15,5 @@ import java.util.List;
 @StrategyPoint
 public interface WinService {
     @Strategy(value = "Windows")
-    ResponseEntity<List<WinCmdEntity>> dispatch(RequestCondition condition) throws Exception;
+    ResponseEntity<List<WinCmdEntity>> dispatch(ServerMessage serverMessage) throws Exception;
 }

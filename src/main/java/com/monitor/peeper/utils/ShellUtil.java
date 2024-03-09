@@ -1,4 +1,4 @@
-package utils;
+package com.monitor.peeper.utils;
 
 import com.jcraft.jsch.*;
 

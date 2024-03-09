@@ -1,13 +1,13 @@
 package com.monitor.peeper.service.impl;
 
 
-import com.monitor.peeper.condition.RequestCondition;
 import com.monitor.peeper.entity.WinCmdEntity;
+import com.monitor.peeper.entity.excel.ServerMessage;
 import com.monitor.peeper.service.WinService;
+import com.monitor.peeper.utils.ResponseEntity;
+import com.monitor.peeper.utils.ShellUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import utils.ResponseEntity;
-import utils.ShellUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,9 +19,9 @@ public class WinServerImpl implements WinService {
 
 
     @Override
-    public ResponseEntity<List<WinCmdEntity>> dispatch(RequestCondition condition) throws Exception {
+    public ResponseEntity<List<WinCmdEntity>> dispatch(ServerMessage serverMessage) throws Exception {
         System.out.println("windows");
-        ShellUtil shell = new ShellUtil(condition.getIp(), condition.getUser(), condition.getPassword());
+        ShellUtil shell = new ShellUtil(serverMessage.getIp(), serverMessage.getUser(), serverMessage.getPassword());
         String jpsValue = shell.exec("jps -l");
         System.out.println("===========jps=======");
         System.out.println(jpsValue);
