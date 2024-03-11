@@ -1,7 +1,7 @@
 package com.monitor.peeper.service.impl;
 
 
-import com.monitor.peeper.entity.WinCmdEntity;
+import com.monitor.peeper.entity.JarDetailEntity;
 import com.monitor.peeper.entity.excel.ServerMessage;
 import com.monitor.peeper.service.LinuxService;
 import com.monitor.peeper.utils.ResponseEntity;
@@ -16,7 +16,7 @@ import java.util.List;
 @Slf4j
 public class LinuxServerImpl implements LinuxService {
     @Override
-    public ResponseEntity<List<WinCmdEntity>> dispatch(ServerMessage serverMessage) throws Exception {
+    public ResponseEntity<List<JarDetailEntity>> dispatch(ServerMessage serverMessage) throws Exception {
         System.out.println("Linux");
         ShellUtil shell = new ShellUtil(serverMessage.getIp(), serverMessage.getUser(), serverMessage.getPassword());
         String jpsValue = shell.exec("jps -l");
@@ -24,12 +24,12 @@ public class LinuxServerImpl implements LinuxService {
         System.out.println(jpsValue);
         System.out.println("=====================");
         String[] jpes = jpsValue.split("\n");
-        List<WinCmdEntity> winCmdEntities = new ArrayList<>();
+        List<JarDetailEntity> winCmdEntities = new ArrayList<>();
         for (String jpe : jpes) {
             if (jpe.contains("jps")) {
                 continue;
             }
-            WinCmdEntity entity = new WinCmdEntity();
+            JarDetailEntity entity = new JarDetailEntity();
             String[] jps1 = jpe.split(" ");
             entity.setPid(Integer.parseInt(jps1[0]));
             this.getjarMessage(shell, entity);
@@ -39,10 +39,10 @@ public class LinuxServerImpl implements LinuxService {
             winCmdEntities.add(entity);
         }
 
-        return new ResponseEntity<List<WinCmdEntity>>().success(winCmdEntities, "s");
+        return new ResponseEntity<List<JarDetailEntity>>().success(winCmdEntities, "s");
     }
 
-    private void getjarMessage(ShellUtil shell, WinCmdEntity entity) throws Exception {
+    private void getjarMessage(ShellUtil shell, JarDetailEntity entity) throws Exception {
         String jvmmes = shell.exec("jcmd " + entity.getPid() + " VM.command_line");
         if (jvmmes.contains("org.jetbrains")) {
             return;
@@ -63,7 +63,7 @@ public class LinuxServerImpl implements LinuxService {
         this.getPost(shell, entity);
     }
 
-    private void getPath(ShellUtil shell, WinCmdEntity entity) throws Exception {
+    private void getPath(ShellUtil shell, JarDetailEntity entity) throws Exception {
         String pwdx = "pwdx " + entity.getPid();
         String pwdxValue = shell.exec(pwdx);
         System.out.println("===========pwdx=======");
@@ -72,7 +72,7 @@ public class LinuxServerImpl implements LinuxService {
         entity.setJarPath(pwdxValue.substring(pwdxValue.indexOf("/")).replaceAll("\n",""));
     }
 
-    private void getPost(ShellUtil shell, WinCmdEntity entity) throws Exception {
+    private void getPost(ShellUtil shell, JarDetailEntity entity) throws Exception {
         if (entity.getJarName().contains("org.jetbrains")) {
             return;
         }

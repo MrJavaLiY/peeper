@@ -1,7 +1,7 @@
 package com.monitor.peeper.service.impl;
 
 
-import com.monitor.peeper.entity.WinCmdEntity;
+import com.monitor.peeper.entity.JarDetailEntity;
 import com.monitor.peeper.entity.excel.ServerMessage;
 import com.monitor.peeper.service.WinService;
 import com.monitor.peeper.utils.ResponseEntity;
@@ -19,7 +19,7 @@ public class WinServerImpl implements WinService {
 
 
     @Override
-    public ResponseEntity<List<WinCmdEntity>> dispatch(ServerMessage serverMessage) throws Exception {
+    public ResponseEntity<List<JarDetailEntity>> dispatch(ServerMessage serverMessage) throws Exception {
         System.out.println("windows");
         ShellUtil shell = new ShellUtil(serverMessage.getIp(), serverMessage.getUser(), serverMessage.getPassword());
         String jpsValue = shell.exec("jps -l");
@@ -27,12 +27,12 @@ public class WinServerImpl implements WinService {
         System.out.println(jpsValue);
         System.out.println("=====================");
         String[] jpes = jpsValue.split("\n");
-        List<WinCmdEntity> winCmdEntities = new ArrayList<>();
+        List<JarDetailEntity> winCmdEntities = new ArrayList<>();
         for (String jpe : jpes) {
             if (jpe.contains("jps")) {
                 continue;
             }
-            WinCmdEntity entity = new WinCmdEntity();
+            JarDetailEntity entity = new JarDetailEntity();
             String[] jps1 = jpe.split(" ");
             entity.setPid(Integer.parseInt(jps1[0]));
             this.getjarMessage(shell, entity);
@@ -42,10 +42,10 @@ public class WinServerImpl implements WinService {
             winCmdEntities.add(entity);
         }
 
-        return new ResponseEntity<List<WinCmdEntity>>().success(winCmdEntities, "s");
+        return new ResponseEntity<List<JarDetailEntity>>().success(winCmdEntities, "s");
     }
 
-    private void getjarMessage(ShellUtil shell, WinCmdEntity entity) throws Exception {
+    private void getjarMessage(ShellUtil shell, JarDetailEntity entity) throws Exception {
         String jvmmes = shell.exec("jcmd " + entity.getPid() + " VM.command_line");
         if (jvmmes.contains("org.jetbrains")) {
             return;
@@ -72,7 +72,7 @@ public class WinServerImpl implements WinService {
         this.getPost(shell, entity);
     }
 
-    private void getPost(ShellUtil shell, WinCmdEntity entity) throws Exception {
+    private void getPost(ShellUtil shell, JarDetailEntity entity) throws Exception {
         if (entity.getJarName()!=null&&entity.getJarName().contains("org.jetbrains")) {
             return;
         }
