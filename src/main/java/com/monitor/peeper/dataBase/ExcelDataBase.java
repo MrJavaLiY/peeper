@@ -83,7 +83,7 @@ public abstract class ExcelDataBase<T> implements ReadListener<T> {
     /**
      * 将set转换成map，好检索
      */
-    protected  void transMap() {
+    protected void transMap() {
         initMap();
         cache.forEach(c -> {
             cacheMap.put(getIndex(c), c);
@@ -238,6 +238,19 @@ public abstract class ExcelDataBase<T> implements ReadListener<T> {
             List<T> dataAll = new ArrayList<>(cache);
             cover(dataAll);
             initCache();
+        }
+    }
+
+    /**
+     * 有就修改，无就新增
+     *
+     * @param datum
+     */
+    public void reNew(T datum) {
+        if (cacheMap.containsKey(getIndex(datum))) {
+            update(datum);
+        }else{
+            add(datum);
         }
     }
 

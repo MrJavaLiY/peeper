@@ -76,6 +76,8 @@ public class DataPerServiceImpl implements DataPerService {
 
     @Override
     public void reNewPer(List<DataValue> dataValue) {
-
+        for (DataValue value : dataValue) {
+            dataExcelDataBase.reNew(value);
+        }
     }
 }
