@@ -39,6 +39,12 @@ public abstract class ExcelDataBase<T> implements ReadListener<T> {
     protected static final String NOTICE_PATH = FOLDER + "notice_config.xlsx";
     protected static final String NOTICE_SHEET_NAME = "message";
     /**
+     * 服务名称存储位置
+     */
+    protected static final String SERVICE_NAME_PATH = FOLDER + "serice_name.xlsx";
+    protected static final String SERVICE_NAME_SHEET_NAME = "name";
+
+    /**
      * EasyExcel使用参数
      */
     protected String path = "";

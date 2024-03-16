@@ -2,9 +2,11 @@ package com.monitor.peeper.dataBase;
 
 import com.monitor.peeper.entity.excel.ServerMessage;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
 
 //@Component
 @Slf4j
+@Component
 public class ServerExcelDataBase extends ExcelDataBase<ServerMessage> {
 
     public ServerExcelDataBase() {
@@ -17,7 +19,7 @@ public class ServerExcelDataBase extends ExcelDataBase<ServerMessage> {
 
 
     @Override
-    protected String getIndex(ServerMessage serverMessage) {
+    public String getIndex(ServerMessage serverMessage) {
         return serverMessage.getIndex(serverMessage);
     }
 }

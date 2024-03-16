@@ -10,23 +10,27 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
 
 @Service
 @Slf4j
-public class FileOperServiceImpl extends ServerExcelDataBase implements FileOperService {
+public class FileOperServiceImpl implements FileOperService {
+    @Resource
+    ServerExcelDataBase excelDataBase;
+
     @Override
     public ResponseEntity<String> addData2File(RequestCondition condition) {
         ServerMessage serverMessage = condition.getSm();
-        serverMessage.setIndex(getIndex(serverMessage));
-        super.add(serverMessage);
+        serverMessage.setIndex(excelDataBase.getIndex(serverMessage));
+        excelDataBase.add(serverMessage);
         return new ResponseEntity<String>().success("", "成功");
     }
 
     @Override
     public ResponseEntity<List<ServerMessage>> getData2View() {
-        return new ResponseEntity<List<ServerMessage>>().success(new ArrayList<>(super.getAll()), "成功");
+        return new ResponseEntity<List<ServerMessage>>().success(new ArrayList<>(excelDataBase.getAll()), "成功");
     }
 
     @Override
@@ -35,15 +39,15 @@ public class FileOperServiceImpl extends ServerExcelDataBase implements FileOper
         serverMessage.setIp(condition.getIp());
         serverMessage.setUser(condition.getUser());
 
-        ServerMessage cacheDatum = super.getCacheOne(super.getIndex(serverMessage));
-        super.delete(cacheDatum);
+        ServerMessage cacheDatum = excelDataBase.getCacheOne(excelDataBase.getIndex(serverMessage));
+        excelDataBase.delete(cacheDatum);
         return getData2View();
     }
 
     @Override
     public ResponseEntity<ServerMessage> updateData2File(RequestCondition condition) {
         ServerMessage serverMessage = condition.getSm();
-        ServerMessage cacheDatum = super.getCacheOne(super.getIndex(serverMessage));
+        ServerMessage cacheDatum = excelDataBase.getCacheOne(excelDataBase.getIndex(serverMessage));
         if (cacheDatum == null) {
             throw new NotSM2UpdateException("这次传入的ip和账号没有发现可修改的服务器，如果需要修改请先删除后新增");
         }
@@ -56,8 +60,8 @@ public class FileOperServiceImpl extends ServerExcelDataBase implements FileOper
         if (StringUtils.hasText(condition.getSm().getType())) {
             cacheDatum.setType(condition.getSm().getType());
         }
-        super.update(cacheDatum);
-        return new ResponseEntity<ServerMessage>().success(getCacheOne(getIndex(serverMessage)), "成功");
+        excelDataBase.update(cacheDatum);
+        return new ResponseEntity<ServerMessage>().success(excelDataBase.getCacheOne(excelDataBase.getIndex(serverMessage)), "成功");
     }
 
 }

@@ -16,4 +16,5 @@ public class RequestCondition {
 
 
     private ServerMessage sm;
+    private String index;
 }
