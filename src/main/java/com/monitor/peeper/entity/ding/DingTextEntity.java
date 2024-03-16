@@ -1,6 +1,5 @@
 package com.monitor.peeper.entity.ding;
 
-import com.yxkj.ptjk.entity.log.TbMessageNoticeDetailDing;
 import lombok.Data;
 
 /**
@@ -16,9 +15,9 @@ public class DingTextEntity {
 
     }
 
-    public DingTextEntity(TbMessageNoticeDetailDing ding) {
+    public DingTextEntity(DingMessage ding) {
         StringBuilder value = new StringBuilder( ding.getValue()==null?"":ding.getValue());
-        if (ding.getIsAtAll()!=null&&!ding.getIsAtAll()&&ding.getAtMobiles()!=null&&ding.getAtMobiles().size() != 0) {
+        if (ding.getIsAtAll()!=null&&!ding.getIsAtAll()&&ding.getAtMobiles()!=null&& !ding.getAtMobiles().isEmpty()) {
             ding.getAtMobiles().forEach(c -> {
                 value.append(" @").append(c).append(" ");
             });

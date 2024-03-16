@@ -1,7 +1,6 @@
 package com.monitor.peeper.entity.ding;
 
 import com.alibaba.fastjson.annotation.JSONField;
-import com.yxkj.ptjk.entity.log.TbMessageNoticeDetailDing;
 import lombok.Data;
 
 import java.util.List;
@@ -21,8 +20,8 @@ public class DingAtEntity {
 
     }
 
-    public DingAtEntity(TbMessageNoticeDetailDing ding) {
+    public DingAtEntity(DingMessage ding) {
         this.atMobiles = ding.getAtMobiles();
-        this.isAtAll = ding.getIsAtAll()==null?false: ding.getIsAtAll();
+        this.isAtAll = ding.getIsAtAll() != null && ding.getIsAtAll();
     }
 }

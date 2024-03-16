@@ -19,9 +19,9 @@ public class DingTalkEntity {
 
     }
 
-    public DingTalkEntity(TbMessageNoticeDetailDing detail) {
-        this.at = new DingAtEntity(detail);
-        this.text = new DingTextEntity(detail);
+    public DingTalkEntity(DingMessage dingMessage) {
+        this.at = new DingAtEntity(dingMessage);
+        this.text = new DingTextEntity(dingMessage);
         this.msgtype = "text";
     }
 }
