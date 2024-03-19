@@ -1,6 +1,5 @@
 package com.monitor.peeper.entity.ding;
 
-import com.yxkj.ptjk.entity.log.TbMessageNoticeDetailDing;
 import lombok.Data;
 
 /**

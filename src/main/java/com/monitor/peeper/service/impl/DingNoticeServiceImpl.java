@@ -7,7 +7,6 @@ import com.monitor.peeper.service.DingNoticeService;
 import com.monitor.peeper.utils.ResponseEntity;
 import com.xiaoleilu.hutool.http.HttpUtil;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 /**
@@ -18,7 +17,7 @@ import org.springframework.stereotype.Service;
 @Service
 @Slf4j
 public class DingNoticeServiceImpl implements DingNoticeService {
-    @Value("${notice.}")
+
     @Override
     public ResponseEntity<String> notice(DingMessage dingMessage) {
         try {
